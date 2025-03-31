@@ -13,14 +13,24 @@ import (
 
 func main() {
 	conf, err := config.ReadConf()
-	db, err := sql.Open("postgres", conf.DbURL)
-	dbQueries := *database.New(db)
 	if err != nil {
 		log.Fatalf("error reading config: %v", err)
 		os.Exit(1)
 	}
 	
-	currentState := internal.State{ConfPtr: &conf, DB: &dbQueries}
+	db, err := sql.Open("postgres", conf.DbURL)
+	dbQueries := *database.New(db)
+	if err != nil {
+		log.Fatalf("error with database: %v", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+	
+	currentState := internal.State{
+		ConfPtr: &conf, 
+		DB: &dbQueries,
+	}
+	
 	cmdList := internal.Commands{
 		Handlers: make(map[string]func(*internal.State, internal.Command) error),
 	}
