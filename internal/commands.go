@@ -71,6 +71,33 @@ func HandlerRegister(s *State, cmd Command) error{
 	return nil
 }
 
+func HandlerReset(s *State, cmd Command) error {
+	err := s.DB.Reset(context.Background())
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("error: %v", err)
+	}
+	fmt.Println("Database reset successfully!")
+	return nil
+}
+
+func HandlerUsers(s *State, cmd Command) error {
+	namesList, err := s.DB.GetAllUsers(context.Background())
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	for _, el := range namesList {
+		if el == s.ConfPtr.Current_user_name {
+			fmt.Printf("* %s (current)\n", el)
+		} else {
+			fmt.Printf("* %s\n", el)
+		}
+	}
+	return nil
+}
+
 func (c *Commands) Register(name string, f func(s *State, cmd Command) error) {
 	c.Handlers[name] = f
 }
