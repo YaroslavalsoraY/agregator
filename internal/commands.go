@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/net/html"
 )
 
 type Command struct {
@@ -95,6 +96,26 @@ func HandlerUsers(s *State, cmd Command) error {
 			fmt.Printf("* %s\n", el)
 		}
 	}
+	return nil
+}
+
+func HandlerAgg(s *State, cmd Command) error {
+	url := "https://www.wagslane.dev/index.xml"
+
+	urlData, err := fetchFeed(context.Background(), url)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	fmt.Println(html.UnescapeString(urlData.Channel.Title))
+	fmt.Println(html.UnescapeString(urlData.Channel.Description))
+	
+	for _, el := range urlData.Channel.Item {
+		fmt.Println(html.UnescapeString(el.Title))
+		fmt.Println(html.UnescapeString(el.Description))
+	}
+	
 	return nil
 }
 
