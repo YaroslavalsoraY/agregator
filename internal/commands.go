@@ -119,6 +119,46 @@ func HandlerAgg(s *State, cmd Command) error {
 	return nil
 }
 
+func HandlerAddFeed(s *State, cmd Command) error {
+	if len(cmd.Args) < 2 {
+		os.Exit(1)
+		return errors.New("Not enough arguments")
+	}
+
+	user_id, err := s.DB.GetUserID(context.Background(), s.ConfPtr.Current_user_name)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	arg := database.AddFeedParams {
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name: cmd.Args[0],
+		Url: cmd.Args[1],
+		UserID: user_id,
+	}
+
+	newFeed, err := s.DB.AddFeed(context.Background(), arg)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+	printFeed(newFeed)
+	
+	return nil
+}
+
+func printFeed(feed database.Feed) {
+	fmt.Printf("* ID:            %s\n", feed.ID)
+	fmt.Printf("* Created:       %v\n", feed.CreatedAt)
+	fmt.Printf("* Updated:       %v\n", feed.UpdatedAt)
+	fmt.Printf("* Name:          %s\n", feed.Name)
+	fmt.Printf("* URL:           %s\n", feed.Url)
+	fmt.Printf("* UserID:        %s\n", feed.UserID)
+}
+
 func (c *Commands) Register(name string, f func(s *State, cmd Command) error) {
 	c.Handlers[name] = f
 }

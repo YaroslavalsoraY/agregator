@@ -40,6 +40,7 @@ func main() {
 	cmdList.Register("reset", internal.HandlerReset)
 	cmdList.Register("users", internal.HandlerUsers)
 	cmdList.Register("agg", internal.HandlerAgg)
+	cmdList.Register("addfeed", internal.HandlerAddFeed)
 
 	if len(os.Args) < 2 {
 		log.Fatalf("not enough arguments")
