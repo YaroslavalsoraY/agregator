@@ -150,6 +150,19 @@ func HandlerAddFeed(s *State, cmd Command) error {
 	return nil
 }
 
+func HandlerFeeds(s *State, cmd Command) error {
+	feeds, err := s.DB.GetAllFeeds(context.Background())
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	for _, el := range feeds {
+		fmt.Printf("Name: %s\nUrl: %s\nUsername: %s\n\n", el.Name, el.Url, el.Name_2)
+	}
+	return nil
+}
+
 func printFeed(feed database.Feed) {
 	fmt.Printf("* ID:            %s\n", feed.ID)
 	fmt.Printf("* Created:       %v\n", feed.CreatedAt)

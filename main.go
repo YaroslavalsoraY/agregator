@@ -41,6 +41,7 @@ func main() {
 	cmdList.Register("users", internal.HandlerUsers)
 	cmdList.Register("agg", internal.HandlerAgg)
 	cmdList.Register("addfeed", internal.HandlerAddFeed)
+	cmdList.Register("feeds", internal.HandlerFeeds)
 
 	if len(os.Args) < 2 {
 		log.Fatalf("not enough arguments")
