@@ -90,3 +90,32 @@ func (q *Queries) GetAllFeeds(ctx context.Context) ([]GetAllFeedsRow, error) {
 	}
 	return items, nil
 }
+
+const getFeedByID = `-- name: GetFeedByID :one
+SELECT name FROM feeds
+WHERE id = $1
+`
+
+func (q *Queries) GetFeedByID(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRowContext(ctx, getFeedByID, id)
+	var name string
+	err := row.Scan(&name)
+	return name, err
+}
+
+const getFeedByUrl = `-- name: GetFeedByUrl :one
+SELECT id, name FROM feeds
+WHERE url = $1
+`
+
+type GetFeedByUrlRow struct {
+	ID   uuid.UUID
+	Name string
+}
+
+func (q *Queries) GetFeedByUrl(ctx context.Context, url string) (GetFeedByUrlRow, error) {
+	row := q.db.QueryRowContext(ctx, getFeedByUrl, url)
+	var i GetFeedByUrlRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}

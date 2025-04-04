@@ -125,7 +125,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		return errors.New("Not enough arguments")
 	}
 
-	user_id, err := s.DB.GetUserID(context.Background(), s.ConfPtr.Current_user_name)
+	userID, err := s.DB.GetUserID(context.Background(), s.ConfPtr.Current_user_name)
 	if err != nil {
 		os.Exit(1)
 		return fmt.Errorf("Error: %v", err)
@@ -137,7 +137,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		UpdatedAt: time.Now(),
 		Name: cmd.Args[0],
 		Url: cmd.Args[1],
-		UserID: user_id,
+		UserID: userID,
 	}
 
 	newFeed, err := s.DB.AddFeed(context.Background(), arg)
@@ -145,6 +145,21 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		os.Exit(1)
 		return fmt.Errorf("Error: %v", err)
 	}
+	
+	arg2 := database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID: userID,
+		FeedID: newFeed.ID,
+	}
+
+	_, err = s.DB.CreateFeedFollow(context.Background(), arg2)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
 	printFeed(newFeed)
 	
 	return nil
@@ -160,6 +175,69 @@ func HandlerFeeds(s *State, cmd Command) error {
 	for _, el := range feeds {
 		fmt.Printf("Name: %s\nUrl: %s\nUsername: %s\n\n", el.Name, el.Url, el.Name_2)
 	}
+	return nil
+}
+
+func HandlerFollow (s *State, cmd Command) error {
+	if len(cmd.Args) < 1 {
+		os.Exit(1)
+		return errors.New("Not enough arguments")
+	}
+
+	userID, err := s.DB.GetUserID(context.Background(), s.ConfPtr.Current_user_name)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	feedID, err := s.DB.GetFeedByUrl(context.Background(), cmd.Args[0])
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	arg := database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID: userID,
+		FeedID: feedID.ID,
+	}
+	_, err = s.DB.CreateFeedFollow(context.Background(), arg)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	fmt.Printf("%s followed on %s\n", feedID.Name, s.ConfPtr.Current_user_name)
+	return nil
+}
+
+func HandlerFolowing (s *State, cmd Command) error {
+	userID, err := s.DB.GetUserID(context.Background(), s.ConfPtr.Current_user_name)
+	var feedNames []string
+
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	feedIDs, err := s.DB.GetAllUsersFeedsIDs(context.Background(), userID)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+	
+	for _, feedID := range feedIDs {
+		feedName, _ := s.DB.GetFeedByID(context.Background(), feedID)
+		feedNames = append(feedNames, feedName)
+	} 
+
+	fmt.Println("All your feeds:")
+	for _, el := range feedNames {
+		fmt.Printf("%s\n", el)
+	}
+	
 	return nil
 }
 
