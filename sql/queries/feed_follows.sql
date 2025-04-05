@@ -14,3 +14,8 @@ ON users.id = inserted_feed_follow.user_id;
 -- name: GetAllUsersFeedsIDs :many
 SELECT feed_id FROM feed_follows
 WHERE user_id = $1;
+
+-- name: DeleteFeedFollow :exec
+DELETE FROM feed_follows
+WHERE user_id = $1
+AND feed_id = $2;

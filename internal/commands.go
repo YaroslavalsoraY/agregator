@@ -241,6 +241,31 @@ func HandlerFolowing(s *State, cmd Command) error {
 	return nil
 }
 
+func HandlerUnfollow(s *State, cmd Command, user database.User) error {
+	if len(cmd.Args) == 0 {
+		os.Exit(1)
+		return errors.New("Not enough arguments")
+	}
+
+	feedID, err := s.DB.GetFeedByUrl(context.Background(), cmd.Args[0])
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	arg := database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feedID.ID,
+	}
+	err = s.DB.DeleteFeedFollow(context.Background(), arg)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+	
+	return nil
+}
+
 func printFeed(feed database.Feed) {
 	fmt.Printf("* ID:            %s\n", feed.ID)
 	fmt.Printf("* Created:       %v\n", feed.CreatedAt)

@@ -45,6 +45,7 @@ func main() {
 	cmdList.Register("feeds", middlewareLoggedIn(internal.HandlerFeeds))
 	cmdList.Register("follow", middlewareLoggedIn(internal.HandlerFollow))
 	cmdList.Register("following", internal.HandlerFolowing)
+	cmdList.Register("unfollow", middlewareLoggedIn(internal.HandlerUnfollow))
 
 	if len(os.Args) < 2 {
 		log.Fatalf("not enough arguments")
