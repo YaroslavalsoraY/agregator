@@ -119,7 +119,7 @@ func HandlerAgg(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerAddFeed(s *State, cmd Command) error {
+func HandlerAddFeed(s *State, cmd Command, user database.User) error {
 	if len(cmd.Args) < 2 {
 		os.Exit(1)
 		return errors.New("Not enough arguments")
@@ -165,7 +165,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerFeeds(s *State, cmd Command) error {
+func HandlerFeeds(s *State, cmd Command, user database.User) error {
 	feeds, err := s.DB.GetAllFeeds(context.Background())
 	if err != nil {
 		os.Exit(1)
@@ -178,7 +178,7 @@ func HandlerFeeds(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerFollow (s *State, cmd Command) error {
+func HandlerFollow(s *State, cmd Command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		os.Exit(1)
 		return errors.New("Not enough arguments")
@@ -213,7 +213,7 @@ func HandlerFollow (s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerFolowing (s *State, cmd Command) error {
+func HandlerFolowing(s *State, cmd Command) error {
 	userID, err := s.DB.GetUserID(context.Background(), s.ConfPtr.Current_user_name)
 	var feedNames []string
 
