@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/net/html"
 )
 
 type Command struct {
@@ -100,23 +99,26 @@ func HandlerUsers(s *State, cmd Command) error {
 }
 
 func HandlerAgg(s *State, cmd Command) error {
-	url := "https://www.wagslane.dev/index.xml"
+	if len(cmd.Args) < 1 {
+		os.Exit(1)
+		return errors.New("Not enough arguments")
+	}
 
-	urlData, err := fetchFeed(context.Background(), url)
+	timeBetweenReqs, err := time.ParseDuration(cmd.Args[0])
 	if err != nil {
 		os.Exit(1)
 		return fmt.Errorf("Error: %v", err)
 	}
+	fmt.Printf("Collecting feeds every %v\n", timeBetweenReqs)
 
-	fmt.Println(html.UnescapeString(urlData.Channel.Title))
-	fmt.Println(html.UnescapeString(urlData.Channel.Description))
-	
-	for _, el := range urlData.Channel.Item {
-		fmt.Println(html.UnescapeString(el.Title))
-		fmt.Println(html.UnescapeString(el.Description))
+	ticker := time.NewTicker(timeBetweenReqs)
+	for ; ; <-ticker.C {
+		err = scrapeFeeds(s)
+		if err != nil {
+			os.Exit(1)
+			return fmt.Errorf("Error: %v", err)
+		}
 	}
-	
-	return nil
 }
 
 func HandlerAddFeed(s *State, cmd Command, user database.User) error {
@@ -266,6 +268,29 @@ func HandlerUnfollow(s *State, cmd Command, user database.User) error {
 	return nil
 }
 
+func scrapeFeeds(s *State) (error) {
+	feed, err := s.DB.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	err = s.DB.MarkFeedFetched(context.Background(), feed.ID)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	updatedFeed, err := fetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	fmt.Println(updatedFeed.Channel.Title)
+	return nil
+}
+
 func printFeed(feed database.Feed) {
 	fmt.Printf("* ID:            %s\n", feed.ID)
 	fmt.Printf("* Created:       %v\n", feed.CreatedAt)
@@ -273,6 +298,7 @@ func printFeed(feed database.Feed) {
 	fmt.Printf("* Name:          %s\n", feed.Name)
 	fmt.Printf("* URL:           %s\n", feed.Url)
 	fmt.Printf("* UserID:        %s\n", feed.UserID)
+	fmt.Printf("* lstFetched:        %v\n", feed.LastFetchedAt)
 }
 
 func (c *Commands) Register(name string, f func(s *State, cmd Command) error) {
