@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html"
 	"main/internal/config"
 	"main/internal/database"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -263,6 +265,37 @@ func HandlerUnfollow(s *State, cmd Command, user database.User) error {
 	if err != nil {
 		os.Exit(1)
 		return fmt.Errorf("Error: %v", err)
+	}
+	
+	return nil
+}
+
+func HandlerBrowse(s *State, cmd Command, user database.User) error {
+	var limit int
+	var err error
+	if len(cmd.Args) == 0 {
+		limit = 2
+	}
+	if len(cmd.Args) == 1 {
+		limit, err = strconv.Atoi(cmd.Args[0])
+		if err != nil {
+			limit = 2
+		}
+	}
+
+	arg := database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit: int32(limit),
+	}
+	posts, err := s.DB.GetPostsForUser(context.Background(), arg)
+	if err != nil {
+		os.Exit(1)
+		return fmt.Errorf("Error: %v", err)
+	}
+
+	for _, post := range posts {
+		fmt.Println("Title: ", html.UnescapeString(post.Title))
+		fmt.Println(html.UnescapeString(post.Description) + "\n")
 	}
 	
 	return nil

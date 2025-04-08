@@ -14,9 +14,9 @@ VALUES(
 );
 
 -- name: GetPostsForUser :many
-SELECT posts.url FROM posts
+SELECT posts.title, posts.description FROM posts
 INNER JOIN feeds
 ON feeds.id = posts.feed_id
 WHERE feeds.user_id = $1
-ORDER BY published_at
+ORDER BY posts.updated_at DESC
 LIMIT $2;
