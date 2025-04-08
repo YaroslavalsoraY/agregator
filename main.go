@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"main/internal"
-	"main/internal/config"
-	"main/internal/database"
 	"os"
 
+	"github.com/YaroslavalsoraY/gator/internal"
+	"github.com/YaroslavalsoraY/gator/internal/config"
+	"github.com/YaroslavalsoraY/gator/internal/database"
 	_ "github.com/lib/pq"
 )
 

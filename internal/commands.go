@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"html"
-	"main/internal/config"
-	"main/internal/database"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/YaroslavalsoraY/gator/internal/config"
+	"github.com/YaroslavalsoraY/gator/internal/database"
 	"github.com/google/uuid"
 )
 
