@@ -287,7 +287,31 @@ func scrapeFeeds(s *State) (error) {
 		return fmt.Errorf("Error: %v", err)
 	}
 
-	fmt.Println(updatedFeed.Channel.Title)
+	numPosts := len(updatedFeed.Channel.Item)
+	errIgnored := "pq: duplicate key value violates unique constraint \"posts_url_key\""
+
+	for _, el := range updatedFeed.Channel.Item {
+		arg := database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			PublishedAt: el.PubDate,
+			Title: el.Title,
+			Url: el.Link,
+			Description: el.Description,
+			FeedID: feed.ID,
+		}
+		err = s.DB.CreatePost(context.Background(), arg)
+		if fmt.Sprintf("%v", err) != errIgnored && err != nil{
+			os.Exit(1)
+			return fmt.Errorf("Error: %v", err)
+		}
+		if fmt.Sprintf("%v", err) == errIgnored {
+			numPosts -= 1
+		}
+	}
+	fmt.Printf("Collected %v posts from %v\n", numPosts, updatedFeed.Channel.Title)
+
 	return nil
 }
 
